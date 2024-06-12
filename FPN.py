@@ -6,6 +6,8 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.models
 
+dir(torchvision.models)
+
 class Model(nn.Module):
     def __init__(self):
         super().__init__()
@@ -151,19 +153,17 @@ class FPNDecoder(Model):
 class FPN(nn.Module):
     def __init__(self,
                  encoder=torchvision.models.resnet50,
-                 pretrained=True):
+                 pretrained=True,
+                 final_channels=1):
         super().__init__()
         self.pretrained=pretrained
         filters_dict = [2048, 2048, 1024, 512, 256]
+        self.final_channels=final_channels
 
-        self.encoder = FPNEncoder(encoder(pretrained=pretrained))
-        self.decoder = FPNDecoder(encoder_channels=filters_dict)
+        self.encoder = FPNEncoder(encoder(pretrained=pretrained).to('cuda'))
+        self.decoder = FPNDecoder(encoder_channels=filters_dict,final_channels=1)
     
     def forward(self,x):
         x = self.encoder(x)
         x = self.decoder(x)
         return x
-
-a = FPN()
-t = torch.zeros(1,3,256,256)
-print(a(t).shape)
