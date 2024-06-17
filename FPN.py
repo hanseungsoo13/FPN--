@@ -41,13 +41,15 @@ class FPNBlock(nn.Module):
         super().__init__()
         #encoding output feature connection with conv1*1
         self.skip_conv = nn.Conv2d(skip_channels,pyramid_channels,kernel_size=1)
+        self.afterup_conv = nn.Conv2d(pyramid_channels,pyramid_channels,kernel_size=(3,3),stride=1,padding=1,bias=False)
     def forward(self,x):
         x, skip = x #pyramid output과 encoding output으로 나눔
-
         x = F.interpolate(x,scale_factor=2,mode="nearest")
-        skip = self.skip_conv(skip)
 
+        skip = self.skip_conv(skip)
         x=x+skip
+
+        x = self.afterup_conv(x)
         return x
     
 class SegmentationBlock(nn.Module):
